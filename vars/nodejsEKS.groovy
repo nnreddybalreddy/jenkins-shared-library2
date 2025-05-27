@@ -51,18 +51,18 @@ def call(Map configMap){
                     """
                 }
             }
-            stage('Deploy'){
-                when{
-                    expression {params.deploy}
-                }
-
-                steps{
-                    build job: "../${component}-cd", parameters: [
-                        string(name: 'version', value: "$appVersion"),
-                        string(name: 'ENVIRONMENT', value: "dev"),
-                    ], wait: true
-                }
+        stage('Deploy'){
+            steps{
+                sh """
+                    aws eks update-kubeconfig --region us-east-1 --name expense-dev
+                    cd helm
+                    sed -i 's/IMAGE_VERSION/${appVersion}/g' values.yaml
+                    helm upgrade --install  ${component} -n expense . 
+                    
+                    
+                """
             }
+        }
         }
 
         post {
